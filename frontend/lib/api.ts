@@ -1,10 +1,9 @@
 import type { ApiResponse, Catalogos, Registro, RegistroInput } from './types';
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL;
+const API_ROUTE = '/api/gas';
 
 async function callApi<T>(action: string, data?: unknown): Promise<T> {
-  if (!API_URL) throw new Error('Falta configurar NEXT_PUBLIC_API_URL');
-  const response = await fetch(API_URL, {
+  const response = await fetch(API_ROUTE, {
     method: 'POST',
     headers: { 'Content-Type': 'text/plain;charset=utf-8' },
     body: JSON.stringify({ action, data }),

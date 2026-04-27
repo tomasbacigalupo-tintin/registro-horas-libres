@@ -29,8 +29,10 @@ npm run dev
 Configurar:
 
 ```env
-NEXT_PUBLIC_API_URL=https://script.google.com/macros/s/AKfycbxdgrnwqGjMYKf3rQHgzBFoQNGpDhSG3MItypm2FURJI4zEp3wjAHPSAFbhBGJ_uvhpDg/exec
+GOOGLE_APPS_SCRIPT_URL=https://script.google.com/macros/s/AKfycbytlyec9aZAPLoHIc-uYylyYn8NyvrWqT2igGi0IKvrCgzhfgQeoUnO36f-g7tqfev_6w/exec
 ```
+
+La aplicación usa internamente `/api/gas` para evitar CORS con Google Apps Script.
 
 ## Vercel
 
@@ -44,5 +46,5 @@ Al importar el repo en Vercel:
 Variable de entorno:
 
 ```env
-NEXT_PUBLIC_API_URL=https://script.google.com/macros/s/AKfycbxdgrnwqGjMYKf3rQHgzBFoQNGpDhSG3MItypm2FURJI4zEp3wjAHPSAFbhBGJ_uvhpDg/exec
+GOOGLE_APPS_SCRIPT_URL=https://script.google.com/macros/s/AKfycbytlyec9aZAPLoHIc-uYylyYn8NyvrWqT2igGi0IKvrCgzhfgQeoUnO36f-g7tqfev_6w/exec
 ```
