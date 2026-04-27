@@ -1,40 +1,48 @@
 # registro-horas-libres
 
-Proyecto para registrar horas libres en una institución educativa.
-
-## Estructura
-
-```text
-registro-horas-libres/
-├── frontend/
-├── apps-script/
-└── docs/
-```
+Aplicacion para registrar y consultar horas libres en una institucion educativa.
 
 ## Stack
 
-- Frontend: Next.js, TypeScript, App Router, Tailwind.
-- Backend: Google Apps Script.
+- Frontend: Next.js, TypeScript, App Router y Tailwind.
+- Graficos: Recharts.
+- Backend: Google Apps Script desplegado como Web App.
 - Persistencia: Google Sheets.
 
-## Configuración rápida
+No usa SQL ni backend Node.
 
-1. Crear una planilla de Google Sheets.
-2. Abrir Extensiones > Apps Script.
-3. Copiar `apps-script/Code.gs` y `apps-script/appsscript.json`.
-4. Ejecutar `setup()` una vez.
-5. Completar la hoja `Opciones` con filas tipo/valor. Tipos válidos: `turnos`, `cursos`, `divisiones`, `materias`, `docentes`, `horas`.
-6. Publicar como Web App.
-7. Copiar la URL en `frontend/.env.local`:
+## Estructura
 
-```env
-NEXT_PUBLIC_APPS_SCRIPT_URL=https://script.google.com/macros/s/DEPLOYMENT_ID/exec
-```
+- `frontend/`: app web para Vercel.
+- `apps-script/`: backend para Google Apps Script.
+- `docs/`: documentacion tecnica y despliegue.
 
-## Frontend
+## Instalacion local
 
 ```bash
 cd frontend
 npm install
+cp .env.example .env.local
 npm run dev
+```
+
+Configurar:
+
+```env
+NEXT_PUBLIC_API_URL=https://script.google.com/macros/s/AKfycbxdgrnwqGjMYKf3rQHgzBFoQNGpDhSG3MItypm2FURJI4zEp3wjAHPSAFbhBGJ_uvhpDg/exec
+```
+
+## Vercel
+
+Al importar el repo en Vercel:
+
+- Root Directory: `frontend`
+- Framework Preset: `Next.js`
+- Install Command: `npm install`
+- Build Command: `npm run build`
+
+Variable de entorno:
+
+```env
+NEXT_PUBLIC_API_URL=https://script.google.com/macros/s/AKfycbxdgrnwqGjMYKf3rQHgzBFoQNGpDhSG3MItypm2FURJI4zEp3wjAHPSAFbhBGJ_uvhpDg/exec
 ```
