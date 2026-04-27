@@ -15,8 +15,24 @@ function jsonResponse(body: unknown, status = 200) {
 }
 
 async function forwardJsonResponse(response: Response) {
-  const payload = await response.json();
-  return jsonResponse(payload, response.status);
+  const text = await response.text();
+  
+  // Try to parse as JSON
+  try {
+    const payload = JSON.parse(text);
+    return jsonResponse(payload, response.status);
+  } catch (parseError) {
+    // If JSON parse fails, return error with raw response
+    return jsonResponse(
+      {
+        ok: false,
+        error: 'Google Apps Script returned non-JSON response',
+        status: response.status,
+        raw: text.slice(0, 500)
+      },
+      response.status
+    );
+  }
 }
 
 export async function GET(request: Request) {
@@ -32,6 +48,7 @@ export async function GET(request: Request) {
   try {
     const response = await fetch(targetUrl.toString(), {
       method: 'GET',
+      redirect: 'follow',
       cache: 'no-store'
     });
     return await forwardJsonResponse(response);
@@ -50,8 +67,9 @@ export async function POST(request: Request) {
     const body = await request.json();
     const response = await fetch(gasUrl, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: { 'Content-Type': 'text/plain;charset=utf-8' },
       body: JSON.stringify(body),
+      redirect: 'follow',
       cache: 'no-store'
     });
     return await forwardJsonResponse(response);
