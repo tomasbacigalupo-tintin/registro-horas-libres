@@ -6,6 +6,7 @@ const SHEETS = {
   cursos: 'Cursos',
   materias: 'Materias',
   motivos: 'Motivos',
+  profesoresMaterias: 'Profesores_Materias',
   registros: 'Registros'
 };
 
@@ -22,6 +23,8 @@ const ACTIONS = {
   getMaterias: getMaterias,
   motivos: getMotivos,
   getMotivos: getMotivos,
+  profesoresMaterias: getProfesoresMaterias,
+  getProfesoresMaterias: getProfesoresMaterias,
   registros: getRegistros,
   getRegistros: getRegistros,
   dashboard: getDashboard,
@@ -60,6 +63,7 @@ function getPreceptores() { return getCatalogo(SHEETS.preceptores); }
 function getCursos() { return getCatalogo(SHEETS.cursos); }
 function getMaterias() { return getCatalogo(SHEETS.materias); }
 function getMotivos() { return getCatalogo(SHEETS.motivos); }
+function getProfesoresMaterias() { return getCatalogo(SHEETS.profesoresMaterias, { activeOnly: true }); }
 
 function getRegistros() {
   const sheet = getRegistrosSheet();
@@ -89,7 +93,7 @@ function crearRegistro(data) {
     turno: normalizeIncomingValue(payload.turno),
     motivo: normalizeIncomingValue(payload.motivo),
     observaciones: normalizeIncomingValue(payload.observaciones || ''),
-    created_at: new Date().toISOString()
+    created_at: normalizeIncomingValue(payload.created_at) || new Date().toISOString()
   };
 
   const lock = LockService.getScriptLock();
@@ -115,14 +119,25 @@ function getDashboard() {
   return dashboard;
 }
 
-function getCatalogo(sheetName) {
+function getCatalogo(sheetName, options) {
+  const config = options || {};
   const rows = getSheet(sheetName).getDataRange().getValues();
   if (rows.length === 0) return [];
   const firstRow = rows[0].map(function(cell) { return String(cell).trim().toLowerCase(); });
   const hasHeader = firstRow.indexOf('id') !== -1 || firstRow.indexOf('nombre') !== -1 || firstRow.indexOf('valor') !== -1;
   if (!hasHeader) return rows.map(function(row) { return normalizeCell(row[0]); }).filter(function(value) { return value !== ''; });
   const headers = rows[0].map(function(header) { return String(header).trim(); });
-  return rows.slice(1).filter(function(row) { return row.some(function(cell) { return cell !== '' && cell !== null; }); }).map(function(row) { return rowToObject(headers, row); });
+  var records = rows.slice(1)
+    .filter(function(row) { return row.some(function(cell) { return cell !== '' && cell !== null; }); })
+    .map(function(row) { return rowToObject(headers, row); });
+
+  if (config.activeOnly) {
+    records = records.filter(function(record) {
+      return String(record.activo || '').trim().toUpperCase() === 'SI';
+    });
+  }
+
+  return records;
 }
 
 function parseRequest(e) {
