@@ -14,23 +14,29 @@ function jsonResponse(body: unknown, status = 200) {
   });
 }
 
-async function forwardJsonResponse(response: Response) {
+async function forwardJsonResponse(response: Response, sourceUrl?: string) {
   const text = await response.text();
+  
+  // Log para debugging
+  console.log(`[GAS Proxy] Status: ${response.status}, URL: ${sourceUrl}`);
+  console.log(`[GAS Proxy] Response (first 200 chars): ${text.slice(0, 200)}`);
   
   // Try to parse as JSON
   try {
     const payload = JSON.parse(text);
     return jsonResponse(payload, response.status);
   } catch (parseError) {
-    // If JSON parse fails, return error with raw response
+    // If JSON parse fails, return error with more context
     return jsonResponse(
       {
         ok: false,
         error: 'Google Apps Script returned non-JSON response',
         status: response.status,
-        raw: text.slice(0, 500)
+        url: sourceUrl,
+        rawResponse: text.slice(0, 1000),
+        hint: text.includes('<!doctype') ? 'HTML response detected - check GAS URL and permissions' : 'Unknown format'
       },
-      response.status
+      response.status || 500
     );
   }
 }
@@ -45,14 +51,17 @@ export async function GET(request: Request) {
   const targetUrl = new URL(gasUrl);
   targetUrl.search = incomingUrl.searchParams.toString();
 
+  console.log(`[GAS GET] Calling: ${targetUrl.toString()}`);
+
   try {
     const response = await fetch(targetUrl.toString(), {
       method: 'GET',
       redirect: 'follow',
       cache: 'no-store'
     });
-    return await forwardJsonResponse(response);
+    return await forwardJsonResponse(response, targetUrl.toString());
   } catch (error) {
+    console.error(`[GAS GET] Error:`, error);
     return jsonResponse({ ok: false, error: String(error) }, 500);
   }
 }
@@ -63,8 +72,12 @@ export async function POST(request: Request) {
     return jsonResponse({ ok: false, error: 'Falta configurar GOOGLE_APPS_SCRIPT_URL' }, 500);
   }
 
+  console.log(`[GAS POST] Calling: ${gasUrl}`);
+
   try {
     const body = await request.json();
+    console.log(`[GAS POST] Body:`, JSON.stringify(body).slice(0, 100));
+    
     const response = await fetch(gasUrl, {
       method: 'POST',
       headers: { 'Content-Type': 'text/plain;charset=utf-8' },
@@ -72,8 +85,9 @@ export async function POST(request: Request) {
       redirect: 'follow',
       cache: 'no-store'
     });
-    return await forwardJsonResponse(response);
+    return await forwardJsonResponse(response, gasUrl);
   } catch (error) {
+    console.error(`[GAS POST] Error:`, error);
     return jsonResponse({ ok: false, error: String(error) }, 500);
   }
 }
