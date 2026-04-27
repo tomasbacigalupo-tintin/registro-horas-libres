@@ -2,9 +2,9 @@
 
 import { useEffect, useMemo, useState } from 'react';
 import { Bar, BarChart, CartesianGrid, Cell, Line, LineChart, Pie, PieChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
+import { RegistroTable } from '@/components/RegistroTable';
 import { getRegistros } from '@/lib/api';
 import type { Registro } from '@/lib/types';
-import { RegistroTable } from '../registros/page';
 
 type Filters = { desde: string; hasta: string; profesor: string; preceptor: string; curso: string };
 const empty: Filters = { desde: '', hasta: '', profesor: '', preceptor: '', curso: '' };
@@ -14,7 +14,10 @@ export default function DashboardPage() {
   const [registros, setRegistros] = useState<Registro[]>([]);
   const [filters, setFilters] = useState<Filters>(empty);
   const [error, setError] = useState('');
-  useEffect(() => { getRegistros().then(setRegistros).catch((err) => setError(err.message)); }, []);
+
+  useEffect(() => {
+    getRegistros().then(setRegistros).catch((err) => setError(err.message));
+  }, []);
 
   const filtered = useMemo(() => registros.filter((r) => (!filters.desde || r.fecha >= filters.desde) && (!filters.hasta || r.fecha <= filters.hasta) && (!filters.profesor || r.profesor_ausente === filters.profesor) && (!filters.preceptor || r.preceptor === filters.preceptor) && (!filters.curso || r.curso === filters.curso)), [registros, filters]);
   const profesores = unique(registros, 'profesor_ausente');
